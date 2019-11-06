@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.smbms.dao.AppVersion.AppVersionDao">
+
+    <select id="selectVersionByAppId" resultType="appVersion">
+        select app_version.*,(select valueName from data_dictionary where valueId=app_version.publishStatus and typeCode='PUBLISH_STATUS') publishStatusName from app_version
+        <where>
+            and appId=#{appId}
+        </where>
+    </select>
+
+    <insert id="addVersion" parameterType="appVersion" useGeneratedKeys="true" keyProperty="id">
+        insert into app_version values(null,#{appId},#{versionNo},#{versionInfo},#{publishStatus},null,#{versionSize},#{createdBy},#{creationDate},null,#{modifyDate},null,#{apkFileName})
+        <selectKey resultType="java.lang.Integer" order="AFTER"
+                    keyProperty="id">
+                SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+
+    <update id="updateVersion" parameterType="appVersion">
+        update app_version set versionNo=#{versionNo},versionInfo=#{versionInfo},versionSize=#{versionSize},apkFileName=#{apkFileName},modifyBy=#{modifyBy},modifyDate=#{modifyDate}
+        where id=#{id}
+    </update>
+
+    <select id="selectNewVersionByAppId" resultType="appVersion">
+        select * from app_version where id=(
+		select max(id) from app_version where appId=#{appId}
+        )
+    </select>
+</mapper>
